@@ -71,8 +71,6 @@ void setup() {
 
 static std::string text = "";
 static char input_text[128] = "";
-GLuint bg_texture = 0;
-int bg_width = 0, bg_height = 0;
 
 void render(GLFWwindow* window) {
     ImGuiStyle& style = ImGui::GetStyle();
@@ -93,6 +91,39 @@ void render(GLFWwindow* window) {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
+        // Градиентный фон
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+        glOrtho(0.0, display_w, display_h, 0.0, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+
+        glDisable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+            // Верх - голубой
+            glColor4f(0.4f, 0.6f, 0.9f, 1.0f);
+            glVertex2f(0.0f, 0.0f);
+            glVertex2f(display_w, 0.0f);
+
+            // Низ - белый
+            glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+            glVertex2f(display_w, display_h);
+            glVertex2f(0.0f, display_h);
+        glEnd();
+
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+
+        // ImGui
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -173,8 +204,6 @@ void render(GLFWwindow* window) {
         ImGui::End();
 
         ImGui::Render();
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
@@ -183,10 +212,7 @@ void render(GLFWwindow* window) {
 
 int main() {
     setup();
-    bg_texture = LoadTexture("image.jpg", &bg_width, &bg_height);
-
     GLFWwindow* window = glfwGetCurrentContext();
-
     render(window);
 
     ImGui_ImplOpenGL3_Shutdown();
