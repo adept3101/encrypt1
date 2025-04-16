@@ -10,6 +10,31 @@
 #include "decrypt.h"
 #include <thread>
 #include <chrono>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+GLuint LoadTexture(const char *filename, int *width, int *height){
+    int channels;
+    unsigned char* data = stbi_load(filename, width, height, &channels, 0);
+    if (!data) {
+        std::cerr << "Failed to load image: " << filename << std::endl;
+        return 0;
+    }
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    GLint format = (channels == 4) ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, format, *width, *height, 0, format, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    return texture;
+}
 
 const std::vector<int> KEY1 = {3, 5, 2, 6, 1, 4};
 const std::vector<char> KEY2 = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 
@@ -46,6 +71,8 @@ void setup() {
 
 static std::string text = "";
 static char input_text[128] = "";
+GLuint bg_texture = 0;
+int bg_width = 0, bg_height = 0;
 
 void render(GLFWwindow* window) {
     ImGuiStyle& style = ImGui::GetStyle();
@@ -74,6 +101,7 @@ void render(GLFWwindow* window) {
         const float windowHeight = 250.0f;
         const ImVec2 windowPos = ImVec2((1280 - windowWidth) * 0.5f, (720 - windowHeight) * 0.5f);
         static bool show_result = false;
+        bool cyrilic = false;
 
         ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight));
@@ -92,6 +120,21 @@ void render(GLFWwindow* window) {
         ImGui::SetCursorPosX(center_x - inputWidth * 0.5f);
         ImGui::SetNextItemWidth(inputWidth);
         ImGui::InputTextWithHint("##Input", "Input",input_text, IM_ARRAYSIZE(input_text));
+        for(size_t i = 0; input_text[i] != '\0'; ++i){
+            unsigned char c = static_cast<unsigned char>(input_text[i]);
+            if(c >= 0xD0 && c <= 0xD1){
+                cyrilic = true;
+                break;
+            }
+        }
+
+        if(cyrilic){
+            ImGui::BeginTooltip();
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 100, 100, 255));
+            ImGui::Text("Cyrillic is not available");
+            ImGui::PopStyleColor();
+            ImGui::EndTooltip();
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
@@ -140,6 +183,7 @@ void render(GLFWwindow* window) {
 
 int main() {
     setup();
+    bg_texture = LoadTexture("image.jpg", &bg_width, &bg_height);
 
     GLFWwindow* window = glfwGetCurrentContext();
 
