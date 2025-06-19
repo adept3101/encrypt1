@@ -1,3 +1,5 @@
-CMakeLists.txt
 build
 .vscode
+imgui
+glfw
+glew-2.2.0
