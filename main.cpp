@@ -8,33 +8,33 @@
 #include <string>
 #include "encrypt.h"
 #include "decrypt.h"
-#include <thread>
-#include <chrono>
+//#include <thread>
+//#include <chrono>
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+//#include "stb_image.h"
 
-GLuint LoadTexture(const char *filename, int *width, int *height){
-    int channels;
-    unsigned char* data = stbi_load(filename, width, height, &channels, 0);
-    if (!data) {
-        std::cerr << "Failed to load image: " << filename << std::endl;
-        return 0;
-    }
+// GLuint LoadTexture(const char *filename, int *width, int *height){
+//     int channels;
+//     unsigned char* data = stbi_load(filename, width, height, &channels, 0);
+//     if (!data) {
+//         std::cerr << "Failed to load image: " << filename << std::endl;
+//         return 0;
+//     }
 
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+//     GLuint texture;
+//     glGenTextures(1, &texture);
+//     glBindTexture(GL_TEXTURE_2D, texture);
 
-    GLint format = (channels == 4) ? GL_RGBA : GL_RGB;
-    glTexImage2D(GL_TEXTURE_2D, 0, format, *width, *height, 0, format, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+//     GLint format = (channels == 4) ? GL_RGBA : GL_RGB;
+//     glTexImage2D(GL_TEXTURE_2D, 0, format, *width, *height, 0, format, GL_UNSIGNED_BYTE, data);
+//     glGenerateMipmap(GL_TEXTURE_2D);
 
-    stbi_image_free(data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//     stbi_image_free(data);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    return texture;
-}
+//     return texture;
+// }
 
 const std::vector<int> KEY1 = {3, 5, 2, 6, 1, 4};
 const std::vector<char> KEY2 = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 
